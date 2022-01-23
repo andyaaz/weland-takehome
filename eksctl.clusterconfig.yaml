@@ -1,0 +1,30 @@
+---
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: core-dev
+  region: ap-southeast-1
+  version: '1.21'
+  tags:
+    Environment: Development
+iam:
+  withOIDC: true
+vpc:
+  id: 
+  subnets:
+    #TODO: update with subnets created
+    public:
+      ap-southeast-1a: { id: subnet-a }
+      ap-southeast-1b: { id: subnet-b }
+      ap-southeast-1c: { id: subnet-c }
+  nat:
+    gateway: "Disable"
+managedNodeGroups:   
+  - name: nodegroup-on-demand-t3a-micro
+    instanceType: t3a.micro
+    minSize: 0
+    desiredCapacity: 1
+    maxSize: 5
+    volumeSize: 30
+    volumeEncrypted: true
+

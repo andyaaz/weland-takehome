@@ -1,0 +1,11 @@
+ingress:
+  enabled: true
+  annotations:    
+    alb.ingress.kubernetes.io/group.name: weland-takehome-alb
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=3600
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/wafv2-acl-arn: <waf-arn>
+    kubernetes.io/ingress.class: alb
+
