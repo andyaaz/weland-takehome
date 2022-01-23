@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'VPC Creation for EKS with public and private subnets'
+Description: 'VPC Creation for EKS with public'
 
 Parameters:
   EksClusterName:
@@ -56,15 +56,6 @@ Resources:
       RouteTableId: !Ref PublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
-
-
-  PrivateRouteTable:
-    Type: 'AWS::EC2::RouteTable'
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Join ['', [!Ref "AWS::StackName", "-Private-RT" ]]
 
 ## Start of Public Subnet Creation
 
@@ -140,103 +131,3 @@ Resources:
       SubnetId: !Ref PublicSubNetAZ3
       RouteTableId: !Ref PublicRouteTable
 
-## Start of Private Subnet Creation
-
-  PrivateSubNetAZ1:
-    Type: 'AWS::EC2::Subnet'
-    DependsOn: VPC
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]
-      CidrBlock: 10.1.12.0/22
-      MapPublicIpOnLaunch: false
-      Tags:
-        - Key: "Name"
-          Value: !Join ['', [!Ref "AWS::StackName", "-private-",  !Select [ 0, !GetAZs '' ] ]]
-        - Key: "SubnetType"
-          Value: "Private"
-        - Key: !Join ['/', ['kubernetes.io', 'cluster', !Ref "EksClusterName" ] ]
-          Value: "shared"
-        - Key: "kubernetes.io/role/internal-elb"
-          Value: "1"
-
-  PrivateSubnetAZ1RouteTableAssociation:
-    Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties:
-      SubnetId: !Ref PrivateSubNetAZ1
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubNetAZ2:
-    Type: 'AWS::EC2::Subnet'
-    DependsOn: VPC
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 1, !GetAZs '' ]
-      CidrBlock: 10.1.16.0/22
-      MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Join ['', [!Ref "AWS::StackName", "-private-",  !Select [ 1, !GetAZs '' ] ]]
-        - Key: SubnetType
-          Value: Private
-        - Key: !Join ['/', ['kubernetes.io', 'cluster', !Ref "EksClusterName" ] ]
-          Value: "shared"
-        - Key: "kubernetes.io/role/internal-elb"
-          Value: "1"
-
-  PrivateSubnetAZ2RouteTableAssociation:
-    Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties:
-      SubnetId: !Ref PrivateSubNetAZ2
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubNetAZ3:
-    Type: 'AWS::EC2::Subnet'
-    DependsOn: VPC
-    Properties:
-      VpcId: !Ref VPC
-      AvailabilityZone: !Select [ 2, !GetAZs '' ]
-      CidrBlock: 10.1.20.0/22
-      MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Join ['', [!Ref "AWS::StackName", "-private-",  !Select [ 2, !GetAZs '' ] ]]
-        - Key: SubnetType
-          Value: Private
-        - Key: !Join ['/', ['kubernetes.io', 'cluster', !Ref "EksClusterName" ] ]
-          Value: "shared"
-        - Key: "kubernetes.io/role/internal-elb"
-          Value: "1"
-
-  PrivateSubnetAZ3RouteTableAssociation:
-    Type: "AWS::EC2::SubnetRouteTableAssociation"
-    Properties:
-      SubnetId: !Ref PrivateSubNetAZ3
-      RouteTableId: !Ref PrivateRouteTable
-
-# RDS Related Resources
-# Create Security Groups for RDS
-
-  RDSSecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
-    Properties:
-      GroupDescription: RDS Security Group
-      GroupName: !Join ['-', [!Ref "AWS::StackName", "rds-SG" ] ]
-      VpcId: !Ref VPC
-      Tags:
-        -  Key: "Name"
-           Value: "RDS-Security-Group"
-
-
-  RDSSubnetGroup:
-    Type: "AWS::RDS::DBSubnetGroup"
-    Properties:
-      DBSubnetGroupDescription: description
-      DBSubnetGroupName: !Join ['-', [!Ref "AWS::StackName", "rds-subnet" ] ]
-      SubnetIds:
-        - !Ref PrivateSubNetAZ1
-        - !Ref PrivateSubNetAZ2
-        - !Ref PrivateSubNetAZ3
-      Tags:
-        - Key: Name
-          Value: !Join ['-', [!Ref "AWS::StackName", "rds-subnet" ] ]

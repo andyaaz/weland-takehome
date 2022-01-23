@@ -2,8 +2,8 @@
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 metadata:
-  name: core-dev
-  region: ap-southeast-1
+  name: weland-takehome-cluster
+  region: <aws-region>
   version: '1.21'
   tags:
     Environment: Development
